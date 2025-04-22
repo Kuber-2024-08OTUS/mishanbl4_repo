@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homework-2-deployment
+  namespace: homework
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: homework-2-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: homework-2-app
+    spec:
+      nodeSelector:
+        homework: "true"
+      volumes:
+        - name: shared-data
+          emptyDir: {}
+
+      initContainers:
+        - name: init-container
+          image: busybox:1.36
+          command: ['sh', '-c', 'echo "<html><body><h1>Hello, Otus!</h1></body></html>" > /init/index.html']
+          volumeMounts:
+            - name: shared-data
+              mountPath: /init
+
+      containers:
+        - name: web-server
+          image: python:3.9-slim
+          command: ['sh', '-c', 'python -m http.server 8000 --directory /homework']
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: shared-data
+              mountPath: /homework
+          readinessProbe:
+            exec:
+              command: ['test', '-f', '/homework/index.html']
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          lifecycle:
+            preStop:
+              exec:
+                command: ['sh', '-c', 'rm -f /homework/index.html']
