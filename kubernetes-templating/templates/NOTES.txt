@@ -1,0 +1,4 @@
+Thank you for installing the {{ .Chart.Name }} chart!
+
+Your application is available at:
+http://{{ .Values.ingress.host }}/homepage
