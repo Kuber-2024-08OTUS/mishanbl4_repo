@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: homework-pod
+  namespace: homework
+spec:
+  volumes:
+    - name: shared-data
+      emptyDir: {}
+
+  initContainers:
+    - name: init-container
+      image: busybox:1.36
+      command: ['sh', '-c', 'echo "<html><body><h1>Hello, Otus!</h1></body></html>" > /init/index.html']
+      volumeMounts:
+        - name: shared-data
+          mountPath: /init
+
+  containers:
+    - name: web-server
+      image: python:3.9-slim
+      command: ['sh', '-c', 'python -m http.server 8000 --directory /homework']
+      ports:
+        - containerPort: 8000
+      volumeMounts:
+        - name: shared-data
+          mountPath: /homework
+      lifecycle:
+        preStop:
+          exec:
+            command: ['sh', '-c', 'rm -f /homework/index.html']
