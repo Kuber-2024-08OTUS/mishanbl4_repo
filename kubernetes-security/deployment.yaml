@@ -18,6 +18,7 @@ spec:
       labels:
         app: homework-2-app
     spec:
+      serviceAccountName: monitoring
       nodeSelector:
         homework: "true"
       volumes:
@@ -39,7 +40,7 @@ spec:
       containers:
         - name: web-server
           image: python:3.9-slim
-          command: ['sh', '-c', 'python -m http.server 8000 --directory /homework']
+          command: ['sh', '-c', 'curl -k https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/metrics > /homework/metrics.html && python -m http.server 8000 --directory /homework']
           ports:
             - containerPort: 8000
           volumeMounts:
