@@ -1,0 +1,10 @@
+apiVersion: v2
+name: homework-chart
+description: A Helm chart for deploying the Homework application for Otus!
+type: application
+version: 0.1.0
+appVersion: "1.0"
+dependencies:
+  - name: redis
+    version: 17.3.4
+    repository: https://charts.bitnami.com/bitnami

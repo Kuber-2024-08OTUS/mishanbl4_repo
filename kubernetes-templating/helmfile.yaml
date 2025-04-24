@@ -1,0 +1,30 @@
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+
+releases:
+  - name: kafka-prod
+    namespace: prod
+    chart: bitnami/kafka
+    set:
+      - name: replicaCount
+        value: 5
+      - name: image.tag
+        value: 3.5.2-debian-11-r42
+      - name: auth.clientProtocol
+        value: SASL_PLAINTEXT
+      - name: auth.interBrokerProtocol
+        value: SASL_PLAINTEXT
+
+  - name: kafka-dev
+    namespace: dev
+    chart: bitnami/kafka
+    set:
+      - name: replicaCount
+        value: 1
+      - name: auth.clientProtocol
+        value: PLAINTEXT
+      - name: auth.interBrokerProtocol
+        value: PLAINTEXT
+      - name: auth.enabled
+        value: false

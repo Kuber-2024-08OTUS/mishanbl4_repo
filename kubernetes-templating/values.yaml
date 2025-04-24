@@ -1,0 +1,62 @@
+# Global parameters
+namespace: homework
+appName: homework-app
+
+# Deployment parameters
+replicas: 3
+image:
+  repository: python
+  tag: 3.9-slim
+serviceAccountName: monitoring
+nodeSelector:
+  homework: "true"
+
+# Probes configuration
+probes:
+  readinessProbe:
+    enabled: true
+    path: /index.html
+    port: 8000
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# Service parameters
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+# Ingress parameters
+ingress:
+  enabled: true
+  host: homework.otus
+  paths:
+    - path: /homepage
+      pathType: Prefix
+    - path: /
+      pathType: Prefix
+
+# ConfigMap data
+configMap:
+  data:
+    config-file.txt: |
+      key1=value1
+      key2=value2
+      key3=value3
+
+# PVC parameters
+pvc:
+  storageClassName: homework-storage-class
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce
+
+# SA parameters
+serviceAccounts:
+  cd: {}
+  monitoring: {}
+
+# Redis dependency configuration
+redis:
+  auth:
+    enabled: false

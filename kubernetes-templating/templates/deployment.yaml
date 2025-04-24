@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}-deployment
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      nodeSelector:
+        homework: "{{ .Values.nodeSelector.homework }}"
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.appName }}-pvc
+        - name: config-volume
+          configMap:
+            name: {{ .Values.appName }}-config
+      initContainers:
+        - name: init-container
+          image: busybox:1.36
+          command: ['sh', '-c', 'echo "<html><body><h1>Hello, Otus!</h1></body></html>" > /init/index.html']
+          volumeMounts:
+            - name: shared-data
+              mountPath: /init
+      containers:
+        - name: web-server
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ['sh', '-c', 'curl -k https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT/metrics > /homework/metrics.html && python -m http.server 8000 --directory /homework']
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          volumeMounts:
+            - name: shared-data
+              mountPath: /homework
+            - name: config-volume
+              mountPath: /homework/conf
+          {{- if .Values.probes.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probes.readinessProbe.path }}
+              port: {{ .Values.probes.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.probes.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readinessProbe.periodSeconds }}
+          {{- end }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ['sh', '-c', 'rm -f /homework/index.html']
