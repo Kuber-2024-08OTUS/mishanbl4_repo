@@ -1,0 +1,9 @@
+apiVersion: otus.homework/v1
+kind: MySQL
+metadata:
+  name: test-mysql
+spec:
+  image: mysql:5.7
+  database: test_db
+  password: strong_password
+  storage_size: 1Gi
