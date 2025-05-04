@@ -1,0 +1,43 @@
+loki:
+  storageType: s3
+  config: |
+    auth_enabled: false
+
+    server:
+      http_listen_port: 3100
+
+    storage:
+      type: s3
+      s3:
+        endpoint: storage.yandexcloud.net
+        bucketnames: logs-bucket
+        access_key_id: <your key>
+        secret_access_key: <your key>
+        insecure: true
+
+    schema_config:
+      current: v12
+      schemas:
+        - from: 2020-05-15
+          store: chunks
+          object_store: s3
+          schema: v12
+          index:
+            prefix: index_
+            period: 24h
+
+    chunk_store_config:
+      max_look_back_period: 168h
+
+    table_manager:
+      retention_deletes_enabled: false
+      retention_period: 0s
+
+tolerations:
+  - key: "node-role"
+    operator: "Equal"
+    value: "infra"
+    effect: "NoSchedule"
+
+nodeSelector:
+  node-role: infra
